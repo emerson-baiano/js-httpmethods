@@ -44,6 +44,7 @@ main {
 
 .student {
   display: flex;
+  justify-content: space-between;
   border: 1px solid grey;
 }
 
@@ -58,4 +59,19 @@ main {
 
 .action-container input {
   flex-grow: 1;
+}
+
+.btn {
+  width: 80px;
+  height: auto;
+  border: 1px solid black;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn:hover {
+  color: aliceblue;
+  background-color: black;
 }
