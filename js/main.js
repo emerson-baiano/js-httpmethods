@@ -20,6 +20,8 @@ const form = document.getElementById("dataForm");
 const nameInput = document.querySelector("#name");
 const surnameInput = document.querySelector("#surname");
 const registerInput = document.querySelector("#register");
+const sendBtn = document.querySelector("#sendBtn");
+let editPersonId;
 
 /**
  * Get all data from the Server
@@ -56,24 +58,25 @@ const printList = async (element, items) => {
     //adding event listeners
     editBtn.addEventListener("click", async (e) => {
       const personId =
-        e.target.parentElement.childNodes[0].lastChild.textContent;
+        e.target.parentElement.childNodes[3].lastChild.textContent;
+      console.log(personId);
+      editPersonId = personId;
       const person = await getData(`${studentUrl}?id=${personId}`);
       console.log(person[0]);
       nameInput.value = person[0].name;
       surnameInput.value = person[0].surname;
       registerInput.value = person[0].register;
-      // prePayload.append("id", uuidv4());
-      // e.target.parentElement.childNodes.forEach((item) =>
-      //   console.log(item.lastChild)
-      // );
+
+      sendBtn.textContent = "Edit";
     });
-    //TODO: CHANGE BUTTON SEND TO ADD AND CHANGE THE METHOD WHEN CLICKED
 
     deleteBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
       const personId =
-        e.target.parentElement.childNodes[0].lastChild.textContent;
+        e.target.parentElement.childNodes[3].lastChild.textContent;
 
-      async function getPerson(personId) {
+      //delete the person
+      async function deletePerson(personId) {
         await fetch(`${studentUrl}/${personId}`, {
           method: "DELETE",
         })
@@ -82,17 +85,16 @@ const printList = async (element, items) => {
             if (!res.ok) {
               throw new Error("The some problem with you request");
             }
-            // if the post is succesfull the page will be updates
-            // printList(ul, getData(url));
 
             return res.json();
           })
           .then(() => e.target.parentElement.remove());
       }
 
-      return getPerson(String(personId));
+      return deletePerson(String(personId));
     });
 
+    // Creating paragraph item with the KEYS as string
     Object.keys(element).map((item) => {
       const p = document.createElement("p");
       const span = document.createElement("span");
@@ -112,23 +114,29 @@ const printList = async (element, items) => {
 /**
  * Get data from the Form and send them to the server
  */
-form.addEventListener("submit", (e, url) => {
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
-  // Creates a new object that conintains all the data from the form
+
+  // Creates a new object that contains all the data from the form
   const prePayload = new FormData(form);
-  prePayload.append("id", uuidv4());
+  sendBtn.textContent === "Send" && prePayload.append("id", await uuidv4());
   const payload = new URLSearchParams(prePayload);
 
-  fetch(url, {
-    method: "POST",
-    body: payload,
-  }).then((res) => {
-    // if the post has not succesfull throw and error
+  fetch(
+    sendBtn.textContent === "Send"
+      ? studentUrl
+      : `${studentUrl}/${editPersonId}`,
+    {
+      method: sendBtn.textContent === "Send" ? "POST" : "PUT",
+      body: payload,
+    }
+  ).then((res) => {
+    // if the post has not success throw and error
     if (!res.ok) {
       throw new Error("The some problem with you request");
     }
-    // if the post is succesfull the page will be updates
-    printList(ul, getData(url));
+    // if the post is success the page will be updates
+    sendBtn.textContent === "Send" && printList(ul, getData(url));
     return res.json();
   });
 });
@@ -137,38 +145,3 @@ form.addEventListener("submit", (e, url) => {
  * On page load all the data are retrieved
  */
 window.onload = printList(ul, getData(studentUrl));
-
-// {
-//   "students": [
-//     {
-//       "id": "0bdf3b7b-44ef-458a-b2ff-0b46ba8b5fd2",
-//       "name": "Joao",
-//       "surname": "Guimaraes",
-//       "register": "AAAE"
-//     },
-//     {
-//       "id": "46f1a7ae-63cc-4e34-ac58-a19dfc44bcf0",
-//       "name": "Laura",
-//       "surname": "Clochobar",
-//       "register": "AAAC"
-//     },
-//     {
-//       "id": "46f15cb2-e38d-433e-8d7c-6dc6d7491d63",
-//       "name": "Emerson",
-//       "surname": "Lopes",
-//       "register": "AAAD"
-//     },
-//     {
-//       "id": "48f15cb2-e38d-433e-8d7c-6dc6d7491d63",
-//       "name": "Alejandro",
-//       "surname": "Ortega",
-//       "register": "AAAE"
-//     },
-//     {
-//       "id": "46f15cb2-e88d-433e-8d7c-6dc6d7491d63",
-//       "name": "Emanuele",
-//       "surname": "Gurini",
-//       "register": "AAAE"
-//     }
-//   ]
-// }
