@@ -59,10 +59,8 @@ const printList = async (element, items) => {
     editBtn.addEventListener("click", async (e) => {
       const personId =
         e.target.parentElement.childNodes[3].lastChild.textContent;
-      console.log(personId);
       editPersonId = personId;
       const person = await getData(`${studentUrl}?id=${personId}`);
-      console.log(person[0]);
       nameInput.value = person[0].name;
       surnameInput.value = person[0].surname;
       registerInput.value = person[0].register;
@@ -119,24 +117,23 @@ form.addEventListener("submit", async (e) => {
 
   // Creates a new object that contains all the data from the form
   const prePayload = new FormData(form);
-  sendBtn.textContent === "Send" && prePayload.append("id", await uuidv4());
+  const buttonSendFlag = sendBtn.textContent === "Send";
+  buttonSendFlag && prePayload.append("id", await uuidv4());
   const payload = new URLSearchParams(prePayload);
+  console.log(payload.toString());
 
-  fetch(
-    sendBtn.textContent === "Send"
-      ? studentUrl
-      : `${studentUrl}/${editPersonId}`,
-    {
-      method: sendBtn.textContent === "Send" ? "POST" : "PUT",
-      body: payload,
-    }
-  ).then((res) => {
+  const method = buttonSendFlag ? "POST" : "PUT";
+
+  fetch(buttonSendFlag ? studentUrl : `${studentUrl}/${editPersonId}`, {
+    method: method,
+    body: payload,
+  }).then((res) => {
     // if the post has not success throw and error
     if (!res.ok) {
       throw new Error("The some problem with you request");
     }
     // if the post is success the page will be updates
-    sendBtn.textContent === "Send" && printList(ul, getData(url));
+    buttonSendFlag && printList(ul, getData(url));
     return res.json();
   });
 });
